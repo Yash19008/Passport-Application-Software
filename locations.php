@@ -4,8 +4,16 @@ include 'inc/db.php';
 include 'inc/header.php';
 include 'inc/sidebar.php';
 
-// Fetch locations
-$locations = $conn->query("SELECT * FROM locations ORDER BY id DESC");
+// Fetch locations with RPO
+$locations = $conn->query("
+    SELECT l.*, r.name AS rpo_name
+    FROM locations l
+    LEFT JOIN rpo_offices r ON r.id = l.rpo_id
+    ORDER BY l.id DESC
+");
+
+// Fetch RPOs
+$rpos = $conn->query("SELECT * FROM rpo_offices ORDER BY name ASC");
 ?>
 
 <div class="content-wrapper">
@@ -41,6 +49,7 @@ $locations = $conn->query("SELECT * FROM locations ORDER BY id DESC");
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>RPO Office</th>
                                     <th>Name</th>
                                     <th>Created At</th>
                                     <th>Action</th>
@@ -52,12 +61,16 @@ $locations = $conn->query("SELECT * FROM locations ORDER BY id DESC");
                                 while ($row = $locations->fetch_assoc()) { ?>
                                     <tr>
                                         <td><?= $i++ ?></td>
+                                        <td><?= htmlspecialchars($row['rpo_name']) ?></td>
                                         <td><?= htmlspecialchars($row['name']) ?></td>
                                         <td><?= date('d-m-Y H:i A', strtotime($row['created_at'])) ?></td>
                                         <td>
                                             <button class="btn btn-warning btn-sm editBtn"
                                                 data-id="<?= $row['id'] ?>"
-                                                data-name="<?= htmlspecialchars($row['name']) ?>">Edit</button>
+                                                data-name="<?= htmlspecialchars($row['name']) ?>"
+                                                data-rpo="<?= $row['rpo_id'] ?>">
+                                                Edit
+                                            </button>
                                             <button class="btn btn-danger btn-sm deleteBtn"
                                                 data-id="<?= $row['id'] ?>">Delete</button>
                                         </td>
@@ -84,6 +97,17 @@ $locations = $conn->query("SELECT * FROM locations ORDER BY id DESC");
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
+                        <label>RPO Office</label>
+                        <select name="rpo_id" class="form-control" required>
+                            <option value="">Select RPO</option>
+                            <?php while ($r = $rpos->fetch_assoc()) { ?>
+                                <option value="<?= $r['id'] ?>">
+                                    <?= htmlspecialchars($r['name']) ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Name</label>
                         <input type="text" name="name" class="form-control" required>
                     </div>
@@ -107,6 +131,18 @@ $locations = $conn->query("SELECT * FROM locations ORDER BY id DESC");
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
+                    <div class="form-group">
+                        <label>RPO Office</label>
+                        <select name="rpo_id" id="editRpo" class="form-control" required>
+                            <option value="">Select RPO</option>
+                            <?php $rpos = $conn->query("SELECT * FROM rpo_offices ORDER BY name ASC");
+                            while ($r = $rpos->fetch_assoc()) { ?>
+                                <option value="<?= $r['id'] ?>">
+                                    <?= htmlspecialchars($r['name']) ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label>Name</label>
                         <input type="text" name="name" id="editName" class="form-control" required>
@@ -147,6 +183,7 @@ $locations = $conn->query("SELECT * FROM locations ORDER BY id DESC");
         $(document).on("click", ".editBtn", function() {
             $("#editId").val($(this).data("id"));
             $("#editName").val($(this).data("name"));
+            $("#editRpo").val($(this).data("rpo"));
             $("#editModal").modal("show");
         });
 

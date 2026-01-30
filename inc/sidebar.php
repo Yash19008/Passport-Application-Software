@@ -63,8 +63,8 @@ $completedApplications = $applicationCounts['completedApplications'];
                     </a>
                 </li>
 
-                <li class="nav-item has-treeview <?= ($currentPage == 'application_types.php' || $currentPage == 'rpo_offices.php' || $currentPage == 'call_status.php' || $currentPage == 'annexure_types.php' || $currentPage == 'document_types.php' || $currentPage == 'locations.php' || $currentPage == 'user_accounts.php') ? 'menu-open' : '' ?>">
-                    <a href="#" class="nav-link <?= ($currentPage == 'application_types.php' || $currentPage == 'rpo_offices.php' || $currentPage == 'call_status.php' || $currentPage == 'annexure_types.php' || $currentPage == 'document_types.php' || $currentPage == 'locations.php' || $currentPage == 'user_accounts.php') ? 'active' : '' ?>">
+                <li class="nav-item has-treeview <?= ($currentPage == 'application_types.php' || $currentPage == 'manage-staff.php' || $currentPage == 'office_enquiry_numbers.php' || $currentPage == 'rpo_offices.php' || $currentPage == 'call_status.php' || $currentPage == 'annexure_types.php' || $currentPage == 'document_types.php' || $currentPage == 'locations.php' || $currentPage == 'user_accounts.php') ? 'menu-open' : '' ?>">
+                    <a href="#" class="nav-link <?= ($currentPage == 'application_types.php' || $currentPage == 'manage-staff.php' || $currentPage == 'office_enquiry_numbers.php' || $currentPage == 'rpo_offices.php' || $currentPage == 'call_status.php' || $currentPage == 'annexure_types.php' || $currentPage == 'document_types.php' || $currentPage == 'locations.php' || $currentPage == 'user_accounts.php') ? 'active' : '' ?>">
                         <i class="nav-icon fas fa-list"></i>
                         <p>
                             Master
@@ -79,9 +79,21 @@ $completedApplications = $applicationCounts['completedApplications'];
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="office_enquiry_numbers.php" class="nav-link <?= ($currentPage == 'office_enquiry_numbers.php') ? 'active' : '' ?>">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Office Enquiry Numbers</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="rpo_offices.php" class="nav-link <?= ($currentPage == 'rpo_offices.php') ? 'active' : '' ?>">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>RPO Offices</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="manage-staff.php" class="nav-link <?= ($currentPage == 'manage-staff.php') ? 'active' : '' ?>">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Staff</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -117,7 +129,7 @@ $completedApplications = $applicationCounts['completedApplications'];
                     </ul>
                 </li>
 
-                <li class="nav-item has-treeview <?= ($currentPage == 'applications.php' || $currentPage == 'p_applications.php' || $currentPage == 'r_applications.php' || $currentPage == 'res_applications.php' || $currentPage == 'pro_applications.php' || $currentPage == 'com_applications.php') ? 'menu-open' : '' ?>">
+                <li class="nav-item has-treeview menu-open">
                     <a href="#" class="nav-link <?= ($currentPage == 'applications.php' || $currentPage == 'p_applications.php' || $currentPage == 'r_applications.php' || $currentPage == 'res_applications.php' || $currentPage == 'pro_applications.php' || $currentPage == 'com_applications.php') ? 'active' : '' ?>">
                         <i class="nav-icon fas fa-file-alt"></i>
                         <p>

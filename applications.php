@@ -1,5 +1,4 @@
 <?php
-// applications.php
 include 'inc/auth.php';
 include 'inc/db.php';
 include 'inc/header.php';
@@ -7,73 +6,135 @@ include 'inc/sidebar.php';
 ?>
 
 <div class="content-wrapper">
-    <div class="content-header">
+    <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Manage Passport Applications</h1>
+                    <h1>RPO Wise Passport Applications</h1>
                 </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active">Applications</li>
-                    </ol>
+                <div class="col-sm-6 text-right">
+                    <a href="application_add.php" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Application
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
     <section class="content">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <a href="application_add.php" class="btn btn-primary">Add Application</a>
-                        </div>
-                        <div class="card-body">
-                            <table id="applicationsTable" class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Application ID</th>
-                                        <th>Name</th>
-                                        <th>DOB</th>
-                                        <th>Mobile</th>
-                                        <th>Type</th>
-                                        <th>Location</th>
-                                        <th>Created At</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $result = $conn->query("SELECT a.*, l.name as location, t.name as type FROM applications a LEFT JOIN locations l ON l.id = a.location LEFT JOIN types t ON t.id = a.type WHERE a.app_dt IS NULL AND a.status = 'new' ORDER BY a.id DESC");
-                                    $i = 0;
-                                    while ($row = $result->fetch_assoc()) {
-                                        $i++;
-                                        echo "<tr>
-                                            <td>{$i}</td>
-                                            <td>{$row['ap_id']}</td>
-                                            <td>{$row['name']}</td>
-                                            <td>{$row['dob']}</td>
-                                            <td>{$row['mob_no']}</td>
-                                            <td>{$row['type']}</td>
-                                            <td>{$row['location']}</td>
-                                            <td>" . ($row['created_at'] != "" ? date("d-m-Y H:i A", strtotime($row['created_at'])) : "N/A") . "</td>
-                                            <td>
-                                                <a href='application_edit.php?id={$row['id']}' class='btn btn-sm btn-warning'>Edit</a>
-                                                <button class='btn btn-sm btn-danger deleteApp' data-id='{$row['id']}'>Delete</button>
-                                            </td>
-                                        </tr>";
-                                    }
-                                    ?>
-                                </tbody>
-                            </table>
+
+            <?php
+            $rpoQuery = "SELECT * FROM rpo_offices ORDER BY name ASC";
+            $rpoResult = $conn->query($rpoQuery);
+            $tableIndex = 0;
+
+            while ($rpo = $rpoResult->fetch_assoc()) {
+                $tableIndex++;
+
+                // Count applications for this RPO
+                $countRes = $conn->query("
+                    SELECT COUNT(*) AS total 
+                    FROM applications 
+                    WHERE rpo_office_id = {$rpo['id']}
+                ");
+                $countRow = $countRes->fetch_assoc();
+            ?>
+
+                <!-- RPO CARD -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <?php echo $rpo['name']; ?>
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-light">
+                                <?php echo $countRow['total']; ?> / 20 Applications
+                            </span>
                         </div>
                     </div>
+
+                    <div class="card-body">
+                        <table id="rpoTable<?php echo $tableIndex; ?>"
+                            class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Application ID</th>
+                                    <th>Name</th>
+                                    <th>DOB</th>
+                                    <th>Mobile</th>
+                                    <th>Type</th>
+                                    <th>Location</th>
+                                    <th>Application Status</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <?php
+                                $appQuery = "
+                                    SELECT 
+                                        a.*,
+                                        l.name AS location_name,
+                                        t.name AS type_name
+                                    FROM applications a
+                                    LEFT JOIN locations l ON l.id = a.location
+                                    LEFT JOIN types t ON t.id = a.type
+                                    WHERE a.rpo_office_id = {$rpo['id']}
+                                    ORDER BY a.id DESC
+                                ";
+                                $apps = $conn->query($appQuery);
+                                $i = 0;
+
+                                while ($row = $apps->fetch_assoc()) {
+                                    $i++;
+
+                                    $appStatus = ($row['application_status'] == "submitted")
+                                        ? 'Submitted'
+                                        : 'Draft';
+                                ?>
+                                    <tr>
+                                        <td><?php echo $i; ?></td>
+                                        <td><?php echo $row['ap_id']; ?></td>
+                                        <td><?php echo $row['name']; ?></td>
+                                        <td><?php echo $row['dob']; ?></td>
+                                        <td><?php echo $row['mob_no']; ?></td>
+                                        <td><?php echo $row['type_name']; ?></td>
+                                        <td><?php echo $row['location_name']; ?></td>
+
+                                        <td>
+                                            <span class="badge badge-<?php echo ($appStatus == 'Submitted') ? 'success' : 'secondary'; ?>">
+                                                <?php echo $appStatus; ?>
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="badge badge-info">
+                                                <?php echo ucfirst($row['status']); ?>
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <?php if ($row['status'] === 'new') { ?>
+                                                <a href="application_edit.php?id=<?php echo $row['id']; ?>"
+                                                    class="btn btn-sm btn-primary">
+                                                    Fill Application
+                                                </a>
+                                            <?php } else { ?>
+                                                <span class="text-muted">N/A</span>
+                                            <?php } ?>
+                                        </td>
+                                    </tr>
+                                <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+
+            <?php } ?>
+
         </div>
     </section>
 </div>
@@ -82,37 +143,15 @@ include 'inc/sidebar.php';
 
 <script>
     $(function() {
-        $('#applicationsTable').DataTable({
-            "responsive": true,
-            "lengthChange": true,
-            "autoWidth": false,
-            "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-        }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-
-        $(document).on('click', '.deleteApp', function() {
-            const id = $(this).data('id');
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('app_ajax.php', {
-                        action: 'delete',
-                        id: id
-                    }, function(res) {
-                        if (res.status === 'success') {
-                            Swal.fire('Deleted!', res.message, 'success').then(() => location.reload());
-                        } else {
-                            Swal.fire('Error!', res.message, 'error');
-                        }
-                    });
-                }
-            });
-        });
+        <?php for ($i = 1; $i <= $tableIndex; $i++) { ?>
+            $('#rpoTable<?php echo $i; ?>').DataTable({
+                    responsive: true,
+                    lengthChange: true,
+                    autoWidth: false,
+                    pageLength: 10,
+                    buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+                }).buttons().container()
+                .appendTo('#rpoTable<?php echo $i; ?>_wrapper .col-md-6:eq(0)');
+        <?php } ?>
     });
 </script>
